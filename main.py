@@ -2,51 +2,69 @@ import sys
 import os
 import csv
 import string
+from collections import Counter
+
+# Define input and output files
+input_file = "input1.txt"
+output_file = "output.csv"
+
+# Make sure that input and output files match
+if not input_file.endswith('.txt'):
+    print("Error: Input file must have a .txt extension.")
+    sys.exit(1)
+
+if not output_file.endswith('.csv'):
+    print("Error: Output file must have a .csv extension.")
+    sys.exit(1)
+
+# Attempt to read the input file
+try:
+    with open(input_file, 'r', encoding='utf-8') as file:
+        lines = file.readlines()
+except FileNotFoundError:
+    print(f"Error: Input file '{input_file}' does not exist.")
+    sys.exit(1)
+except Exception as exception:
+    print(f"Error: Unable to read the file. {exception}")
+    sys.exit(1)
+
+# Check if the file is empty
+if not lines:
+    print("Error: Input file is empty.")
+    sys.exit(1)
+
+# Count words
+# Used AI to for the section below  #######
+word_count = Counter()
+for line in lines:
+    # Remove punctuation and convert to lowercase
+    line = line.translate(str.maketrans('', '', string.punctuation)).lower()
+    # Split line into words and update counter
+    words = line.split()
+    word_count.update(words)
+################
 
 
+# Find the most common word(s)
+if not word_count:
+    print("Error: No words found in the input file.")
+    sys.exit(1)
 
-# Step 1: Validate Command-Line Arguments
-def validate_arguments(args):
-        """
-        Validates the command-line arguments.
-        - Ensures exactly two arguments (input file and output file).
-        - Checks that the input file has a .txt extension.
-        - Checks that the output file has a .csv extension.
-        - Exits the program with an error message if any validation fails.
-        """
+# Used Ai to format section below #########
+max_count = max(word_count.values())
+most_common_words = [word for word, count in word_count.items() if count == max_count]
+print(f"Most common word(s): {', '.join(most_common_words)} (appeared {max_count} times)")
+############################################
 
-# Step 2: Read Lines from Input File
-def read_file(input_file):
-        """
-        Reads the content of the input file.
-        - Attempts to open and read the file line-by-line.
-        - Handles cases where the file does not exist or cannot be read.
-        - Returns the lines from the file for further processing.
-        """
-# Step 3: Count Words
-def count_words(lines):
-        """
-        Counts the frequency of words in the provided lines.
-        - Removes punctuation and converts text to lowercase.
-        - Splits lines into individual words.
-        - Updates the word count using a Counter.
-        """
+# Write to CSV
+try:
+    with open(output_file, 'w', encoding='utf-8', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerow(['Word', 'Count'])
+        for word, count in sorted(word_count.items()):
+            writer.writerow([word, count])
+except Exception as e:
+    print(f"Error: Unable to write to the output file. {e}")
+    sys.exit(1)
 
-# Step 4: Find Most Common Words
-def find_most_common_words(word_count):
-        """
-        Finds the word(s) with the highest frequency.
-        - Analyzes the word count data to determine the maximum frequency.
-        - Identifies all words with this frequency.
-        - Displays the most common word(s) and their count.
-        """
-
-# Step 5: Write Results to CSV
-def write_to_csv(word_count, output_file):
-        """
-        Writes the word count data to a CSV file.
-        - Creates or overwrites the output file.
-        - Writes a header row followed by word count data sorted alphabetically.
-        - Handles errors such as file write failures or permission issues.
-        """
-
+print(f"Word counts successfully saved to '{output_file}'.")
